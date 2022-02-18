@@ -1,0 +1,91 @@
+
+<div class="results" *ngIf="tableData">
+  <div class="status-bar" *ngIf="tableData.results.length">
+    <div class="page-size-control" *ngIf="controlsOptions?.pageSize?.enable">
+      <span class="page-size-control_label">Записей на странице: </span>
+      <select class="page-size-control_select" [(ngModel)]="tablePagination.pageSize"
+              [ngModelOptions]="{standalone: true}" (change)="setPageSize()">
+        <option *ngFor="let size of paginationOptions">{{size}}</option>
+      </select>
+    </div>
+    Страница {{tableData.page}} из {{tableData.maxPages}}.
+    Отображено {{tableData.results.length}} из {{tableData.counts}} записей
+  </div>
+
+  <div class="status-bar" *ngIf="!tableData.results.length">
+    Ничего не найдено
+  </div>
+
+  <div class="results-container">
+    <table *ngIf="fieldsOptions" class="results_table" cellpadding="0" cellspacing="0">
+      <thead class="results_table_head">
+      <tr class="results_table_head_row">
+        <th *ngFor="let field of fieldsOptions" class="results_table_head_cell">
+          <span class="results_table_head_cell_content" [ngClass]="{
+            'results_table_head_cell_content__sortable': field.sort,
+            'results_table_head_cell_content__sorted': tableState.orderBy === field.name,
+            'results_table_head_cell_content__sorted_desk': tableState.order === -1
+            }"
+            (click)="sortBy(field)">
+      {{field.label}}
+      </span>
+        </th>
+      </tr>
+      </thead>
+
+      <tbody class="results_table_body">
+
+      <tr *ngIf="withFilters" class="results_table_filters">
+        <td *ngFor="let field of fieldsOptions" class="results_table_filters_cell">
+          <input *ngIf="field.filter" [(ngModel)]="tableFilters[field.name]"
+                 [placeholder]="'Enter ' + field.label"
+                 class="results_table_filters_input"
+                 (ngModelChange)="applyFilters()"
+                 [ngModelOptions]="{standalone: true}">
+        </td>
+      </tr>
+
+      <tr *ngFor="let tableItem of tableData.results" class="results_table_body_row" (click)="callEventEmitter(tableItem)">
+        <td *ngFor="let field of fieldsOptions" class="results_table_body_cell">
+          <span class="results_table_body_cell_text" *ngIf="field.type !== 'icon'">{{tableItem[field.name]}}</span>
+          <img class="results_table_body_cell_icon" *ngIf="field.type === 'icon'" [src]="tableItem[field.name]"/>
+        </td>
+      </tr>
+      </tbody>
+
+    </table>
+  </div>
+
+
+
+  <div class="empty-status-bar" *ngIf="!tableData.results.length">
+    Ничего не найдено
+  </div>
+
+  <div class="table-navigation" *ngIf="controlsOptions && tableData.maxPages > 1">
+    <button type="button" class="table-navigation_button table-navigation_button__to-begin"
+            [disabled]="tableData.page <= 1"
+            *ngIf="controlsOptions.toBegin.enable"
+            (click)="toPage(1)"></button>
+    <button type="button" class="table-navigation_button table-navigation_button__to-prev"
+            [disabled]="tableData.page <= 1"
+            *ngIf="controlsOptions.prevPage.enable"
+            (click)="toPage(tableData.page - 1)"></button>
+    <div class="table-navigation_buttons-group"
+         *ngIf="controlsOptions.choosePage.enable">
+      <button type="button" class="table-navigation_button"
+              *ngFor="let page of tablePagination.pagesArr; let $index = index"
+              [ngClass]="{'table-navigation_button__active': tableData.page === $index + 1}"
+              (click)="toPage($index + 1)">{{$index + 1}}</button>
+    </div>
+    <button type="button" class="table-navigation_button table-navigation_button__to-next"
+            [disabled]="tableData.page >= tableData.maxPages"
+            *ngIf="controlsOptions.nextPage.enable"
+            (click)="toPage(tableData.page + 1)"></button>
+    <button type="button" class="table-navigation_button table-navigation_button__to-end"
+            [disabled]="tableData.page >= tableData.maxPages"
+            *ngIf="controlsOptions.toEnd.enable"
+            (click)="toPage(tableData.maxPages)"></button>
+  </div>
+
+</div>
